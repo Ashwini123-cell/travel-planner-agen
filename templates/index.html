@@ -1,0 +1,1740 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TravelMind AI — Intelligent Travel Planner</title>
+  <meta name="description" content="AI-powered travel planning with IBM watsonx.ai Granite models" />
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <!-- Font Awesome 6 -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" />
+  <!-- Animate.css -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     NAVBAR
+═══════════════════════════════════════════════════════════ -->
+<nav class="navbar navbar-expand-lg sticky-top" id="mainNavbar">
+  <div class="container-fluid px-3 px-lg-4">
+    <!-- Brand -->
+    <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+      <div class="brand-icon">
+        <i class="bi bi-airplane-fill"></i>
+      </div>
+      <div>
+        <span class="brand-name">TravelMind</span>
+        <span class="brand-ai">AI</span>
+        <span class="badge badge-powered ms-1">Granite</span>
+      </div>
+    </a>
+
+    <!-- Mobile controls -->
+    <div class="d-flex align-items-center gap-2 d-lg-none">
+      <button class="btn-icon-sm" id="darkModeToggleMobile" title="Toggle dark mode">
+        <i class="bi bi-moon-stars-fill"></i>
+      </button>
+      <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar">
+        <i class="bi bi-list"></i>
+      </button>
+    </div>
+
+    <!-- Desktop nav -->
+    <div class="d-none d-lg-flex align-items-center gap-2 ms-auto">
+      <button class="nav-pill active" id="tabChat" onclick="showTab('chat')">
+        <i class="bi bi-chat-dots-fill me-1"></i>Chat
+      </button>
+      <button class="nav-pill" id="tabRecommend" onclick="showTab('recommend')">
+        <i class="bi bi-stars me-1"></i>Recommend
+      </button>
+      <button class="nav-pill" id="tabItinerary" onclick="showTab('itinerary')">
+        <i class="bi bi-map-fill me-1"></i>Itinerary
+      </button>
+      <button class="nav-pill" id="tabBudget" onclick="showTab('budget')">
+        <i class="bi bi-calculator-fill me-1"></i>Budget
+      </button>
+      <button class="nav-pill" id="tabPacking" onclick="showTab('packing')">
+        <i class="bi bi-bag-check-fill me-1"></i>Packing
+      </button>
+      <button class="nav-pill" id="tabHotel" onclick="showTab('hotel')">
+        <i class="bi bi-building me-1"></i>Hotels
+      </button>
+      <button class="nav-pill" id="tabConsultant" onclick="showTab('consultant')">
+        <i class="bi bi-person-badge-fill me-1"></i>Consultant
+      </button>
+      <button class="nav-pill" id="tabProfile" onclick="showTab('profile')">
+        <i class="bi bi-people-fill me-1"></i>Profile
+      </button>
+      <div class="nav-divider"></div>
+      <button class="btn-icon" id="darkModeToggle" title="Toggle dark mode">
+        <i class="bi bi-moon-stars-fill" id="darkIcon"></i>
+      </button>
+      <div class="status-dot" id="statusDot" title="Checking API...">
+        <span class="dot"></span>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MOBILE OFFCANVAS SIDEBAR
+═══════════════════════════════════════════════════════════ -->
+<div class="offcanvas offcanvas-start" tabindex="-1" id="mobileSidebar">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title">Navigation</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body">
+    <div class="d-flex flex-column gap-2">
+      <button class="nav-pill-mobile" onclick="showTab('chat'); closeSidebar()">
+        <i class="bi bi-chat-dots-fill me-2"></i>Chat
+      </button>
+      <button class="nav-pill-mobile" onclick="showTab('recommend'); closeSidebar()">
+        <i class="bi bi-stars me-2"></i>Destination Recommender
+      </button>
+      <button class="nav-pill-mobile" onclick="showTab('itinerary'); closeSidebar()">
+        <i class="bi bi-map-fill me-2"></i>Itinerary Planner
+      </button>
+      <button class="nav-pill-mobile" onclick="showTab('budget'); closeSidebar()">
+        <i class="bi bi-calculator-fill me-2"></i>Budget Calculator
+      </button>
+      <button class="nav-pill-mobile" onclick="showTab('packing'); closeSidebar()">
+        <i class="bi bi-bag-check-fill me-2"></i>Packing List
+      </button>
+      <button class="nav-pill-mobile" onclick="showTab('hotel'); closeSidebar()">
+        <i class="bi bi-building me-2"></i>Hotel Advisor
+      </button>
+      <button class="nav-pill-mobile" onclick="showTab('consultant'); closeSidebar()">
+        <i class="bi bi-person-badge-fill me-2"></i>AI Travel Consultant
+      </button>
+      <button class="nav-pill-mobile" onclick="showTab('profile'); closeSidebar()">
+        <i class="bi bi-people-fill me-2"></i>Travel Profile
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     HERO BANNER (shown on first load only)
+═══════════════════════════════════════════════════════════ -->
+<div id="heroBanner" class="hero-banner">
+  <div class="hero-bg-anim"></div>
+  <div class="container text-center position-relative">
+    <div class="hero-badge mb-3">Powered by IBM watsonx.ai + Granite</div>
+    <h1 class="hero-title">Plan Your Perfect Trip<br/>with <span class="highlight">AI Intelligence</span></h1>
+    <p class="hero-subtitle">Personalized itineraries · Budget planning · Packing lists · Safety tips<br/>
+      Expert knowledge of India & worldwide destinations</p>
+    <div class="d-flex justify-content-center gap-3 flex-wrap mt-4">
+      <button class="btn-hero-primary" onclick="scrollToApp()">
+        <i class="bi bi-chat-dots-fill me-2"></i>Start Planning
+      </button>
+      <button class="btn-hero-secondary" onclick="showTab('itinerary'); scrollToApp()">
+        <i class="bi bi-map-fill me-2"></i>Build Itinerary
+      </button>
+    </div>
+    <!-- Quick Stats -->
+    <div class="hero-stats mt-5">
+      <div class="stat-item"><span class="stat-num">28+</span><span class="stat-label">Indian States</span></div>
+      <div class="stat-item"><span class="stat-num">100+</span><span class="stat-label">Destinations</span></div>
+      <div class="stat-item"><span class="stat-num">AI</span><span class="stat-label">Powered</span></div>
+      <div class="stat-item"><span class="stat-num">Free</span><span class="stat-label">To Use</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MAIN APPLICATION
+═══════════════════════════════════════════════════════════ -->
+<main class="app-container" id="appContainer">
+  <div class="container-fluid px-2 px-lg-4">
+    <div class="row g-3">
+
+      <!-- ── LEFT SIDEBAR ── -->
+      <div class="col-lg-3 d-none d-lg-block">
+        <div class="sidebar-card h-100">
+
+          <!-- Quick Actions -->
+          <div class="sidebar-section">
+            <h6 class="sidebar-heading">Quick Actions</h6>
+            <div class="quick-actions">
+              <button class="quick-btn" onclick="sendQuickMessage('Plan a 5-day trip to Goa for 2 people with a budget of ₹25,000')">
+                <i class="bi bi-sun-fill"></i> Goa Weekend
+              </button>
+              <button class="quick-btn" onclick="sendQuickMessage('Best hill stations near Bangalore for a 2-day trip')">
+                <i class="bi bi-tree-fill"></i> Hill Stations
+              </button>
+              <button class="quick-btn" onclick="sendQuickMessage('Family trip to Rajasthan for 7 days with kids and elderly parents')">
+                <i class="bi bi-people-fill"></i> Family Trip
+              </button>
+              <button class="quick-btn" onclick="sendQuickMessage('Budget backpacking route through North India for 15 days under ₹30,000')">
+                <i class="bi bi-backpack-fill"></i> Backpacking
+              </button>
+              <button class="quick-btn" onclick="sendQuickMessage('Honeymoon destinations in India for December')">
+                <i class="bi bi-heart-fill"></i> Honeymoon
+              </button>
+              <button class="quick-btn" onclick="sendQuickMessage('Top 5 beaches in India for solo female traveler')">
+                <i class="bi bi-water"></i> Solo Travel
+              </button>
+              <button class="quick-btn" onclick="sendQuickMessage('Adventure trekking destinations in Uttarakhand for beginners')">
+                <i class="bi bi-lightning-fill"></i> Adventure
+              </button>
+              <button class="quick-btn" onclick="sendQuickMessage('Best places to visit in Kerala during monsoon')">
+                <i class="bi bi-cloud-rain-fill"></i> Monsoon Trip
+              </button>
+            </div>
+          </div>
+
+          <!-- Destination Picker -->
+          <div class="sidebar-section mt-3">
+            <h6 class="sidebar-heading">Quick Destination</h6>
+            <select class="form-select form-select-sm mb-2" id="destPicker">
+              <option value="">Choose destination...</option>
+              <optgroup label="🏖️ Beaches">
+                <option>Goa</option>
+                <option>Andaman Islands</option>
+                <option>Kerala Backwaters</option>
+                <option>Varkala Beach</option>
+              </optgroup>
+              <optgroup label="⛰️ Mountains">
+                <option>Manali</option>
+                <option>Shimla</option>
+                <option>Kashmir</option>
+                <option>Darjeeling</option>
+                <option>Spiti Valley</option>
+              </optgroup>
+              <optgroup label="🏛️ Heritage">
+                <option>Agra (Taj Mahal)</option>
+                <option>Jaipur</option>
+                <option>Varanasi</option>
+                <option>Hampi</option>
+                <option>Rajasthan Circuit</option>
+              </optgroup>
+              <optgroup label="🌿 Wildlife">
+                <option>Ranthambore</option>
+                <option>Jim Corbett</option>
+                <option>Kaziranga</option>
+              </optgroup>
+              <optgroup label="🌍 International">
+                <option>Bali, Indonesia</option>
+                <option>Bangkok, Thailand</option>
+                <option>Singapore</option>
+                <option>Dubai, UAE</option>
+              </optgroup>
+            </select>
+            <button class="btn-primary-sm w-100" onclick="quickDestination()">
+              <i class="bi bi-search me-1"></i>Plan This Trip
+            </button>
+          </div>
+
+          <!-- Model Info -->
+          <div class="sidebar-section mt-3">
+            <h6 class="sidebar-heading">AI Engine</h6>
+            <div class="model-info-card">
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <div class="ibm-dot"></div>
+                <span class="model-label">IBM watsonx.ai</span>
+              </div>
+              <div class="model-detail">
+                <span class="text-muted">Model:</span>
+                <span id="modelName">{{ model_id }}</span>
+              </div>
+              <div class="model-detail">
+                <span class="text-muted">Status:</span>
+                <span id="apiStatus">Checking...</span>
+              </div>
+              <div class="model-detail">
+                <span class="text-muted">Messages:</span>
+                <span id="msgCount">0</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── MAIN CONTENT ── -->
+      <div class="col-lg-9">
+
+        <!-- ════════════════════════════════════════
+             TAB: CHAT
+        ════════════════════════════════════════ -->
+        <div id="tabContentChat" class="tab-content active">
+          <div class="chat-container">
+
+            <!-- Chat header -->
+            <div class="chat-header">
+              <div class="d-flex align-items-center gap-3">
+                <div class="agent-avatar">
+                  <i class="bi bi-airplane-fill"></i>
+                </div>
+                <div>
+                  <h5 class="mb-0">TravelMind AI</h5>
+                  <small class="text-muted">Your intelligent travel companion</small>
+                </div>
+              </div>
+              <div class="d-flex gap-2">
+                <button class="btn-icon-sm" onclick="clearChat()" title="Clear chat">
+                  <i class="bi bi-trash3"></i>
+                </button>
+                <button class="btn-icon-sm" onclick="exportChat()" title="Export chat">
+                  <i class="bi bi-download"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Messages area -->
+            <div class="messages-area" id="messagesArea">
+              <!-- Welcome message -->
+              <div class="message assistant-msg">
+                <div class="msg-avatar"><i class="bi bi-airplane-fill"></i></div>
+                <div class="msg-content">
+                  <div class="msg-bubble">
+                    <p>✈️ <strong>Welcome to TravelMind AI!</strong> I'm your intelligent travel planner powered by IBM watsonx.ai with Granite.</p>
+                    <p>I can help you with:</p>
+                    <ul>
+                      <li>🗺️ Personalized day-by-day itineraries</li>
+                      <li>💰 Budget planning and cost analysis</li>
+                      <li>🏨 Hotel, food & restaurant suggestions</li>
+                      <li>🎒 Smart packing checklists</li>
+                      <li>⛅ Weather-aware travel plans</li>
+                      <li>🛡️ Safety tips and local advice</li>
+                      <li>👨‍👩‍👧‍👦 Family & group travel guidance</li>
+                    </ul>
+                    <p>Where would you like to travel? Tell me your destination, budget, and dates to get started! 🌍</p>
+                  </div>
+                  <span class="msg-time">Just now</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Typing indicator -->
+            <div class="typing-indicator d-none" id="typingIndicator">
+              <div class="msg-avatar small"><i class="bi bi-airplane-fill"></i></div>
+              <div class="typing-dots">
+                <span></span><span></span><span></span>
+              </div>
+              <small class="text-muted ms-2">TravelMind is thinking...</small>
+            </div>
+
+            <!-- Chat input -->
+            <div class="chat-input-area">
+              <div class="input-wrapper">
+                <textarea
+                  id="chatInput"
+                  class="chat-textarea"
+                  placeholder="Ask about any destination, itinerary, budget, or travel advice..."
+                  rows="1"
+                  maxlength="4000"
+                ></textarea>
+                <div class="input-actions">
+                  <span class="char-count" id="charCount">0/4000</span>
+                  <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="Send message">
+                    <i class="bi bi-send-fill"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="input-hints d-flex gap-2 mt-2 flex-wrap">
+                <span class="hint-chip" onclick="setInput('Plan a 7-day Rajasthan trip for ₹40,000')">Rajasthan 7D</span>
+                <span class="hint-chip" onclick="setInput('Monsoon destinations in India for July')">Monsoon Trips</span>
+                <span class="hint-chip" onclick="setInput('Family trip to Kerala with 2 kids under 10')">Kerala Family</span>
+                <span class="hint-chip" onclick="setInput('Solo trip to Meghalaya on ₹15,000 budget')">Meghalaya Solo</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ════════════════════════════════════════
+             TAB: DESTINATION RECOMMENDER
+        ════════════════════════════════════════ -->
+        <div id="tabContentRecommend" class="tab-content">
+          <div class="content-card recommend-form-card mb-3">
+            <div class="card-header-custom">
+              <div class="d-flex align-items-center gap-3">
+                <div class="recommend-header-icon">
+                  <i class="bi bi-stars"></i>
+                </div>
+                <div>
+                  <h4 class="mb-0">AI Destination Recommender</h4>
+                  <p class="text-muted mb-0 mt-1">Tell us your preferences — get 3 perfectly matched destinations</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3 p-4">
+              <!-- Row 1 -->
+              <div class="col-md-6">
+                <label class="form-label"><i class="fa-solid fa-globe me-1 text-accent"></i>Destination Type</label>
+                <select class="form-select" id="rec-type">
+                  <option value="any destination (India or International)">Any — Surprise Me!</option>
+                  <optgroup label="🇮🇳 India">
+                    <option value="Indian beach destination">Indian Beaches</option>
+                    <option value="Indian hill station or mountain destination">Indian Hill Stations / Mountains</option>
+                    <option value="Indian heritage or cultural destination">Indian Heritage &amp; Culture</option>
+                    <option value="Indian wildlife or national park">Indian Wildlife / Nature</option>
+                    <option value="Indian city break">Indian City Break</option>
+                    <option value="Indian spiritual or pilgrimage destination">Indian Pilgrimage / Spiritual</option>
+                  </optgroup>
+                  <optgroup label="🌍 International">
+                    <option value="international beach destination">International Beach</option>
+                    <option value="international cultural or heritage destination">International Culture</option>
+                    <option value="international adventure destination">International Adventure</option>
+                    <option value="Southeast Asia destination">Southeast Asia</option>
+                    <option value="European destination">Europe</option>
+                    <option value="Middle East destination">Middle East</option>
+                  </optgroup>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label"><i class="fa-solid fa-indian-rupee-sign me-1 text-accent"></i>Total Budget</label>
+                <select class="form-select" id="rec-budget">
+                  <option value="budget (under ₹10,000 total)">Budget — Under ₹10,000</option>
+                  <option value="budget (₹10,000–₹25,000 total)">Budget — ₹10,000–₹25,000</option>
+                  <option value="mid-range (₹25,000–₹60,000 total)" selected>Mid-range — ₹25,000–₹60,000</option>
+                  <option value="comfortable (₹60,000–₹1,50,000 total)">Comfortable — ₹60,000–₹1,50,000</option>
+                  <option value="luxury (₹1,50,000+ total)">Luxury — ₹1,50,000+</option>
+                </select>
+              </div>
+
+              <!-- Row 2 -->
+              <div class="col-md-4">
+                <label class="form-label"><i class="fa-regular fa-calendar me-1 text-accent"></i>Travel Duration</label>
+                <select class="form-select" id="rec-days">
+                  <option value="2–3 days (weekend trip)">Weekend (2–3 days)</option>
+                  <option value="4–5 days">4–5 Days</option>
+                  <option value="6–7 days" selected>6–7 Days (1 week)</option>
+                  <option value="8–10 days">8–10 Days</option>
+                  <option value="12–14 days">12–14 Days</option>
+                  <option value="3 weeks or more">3 Weeks+</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label"><i class="fa-solid fa-users me-1 text-accent"></i>Travelers</label>
+                <select class="form-select" id="rec-travelers">
+                  <option value="1 solo traveler">Solo Traveler</option>
+                  <option value="2 adults (couple)" selected>Couple (2 Adults)</option>
+                  <option value="2 adults + 1–2 children">Family with Kids</option>
+                  <option value="2 adults + elderly parents">Family with Elderly</option>
+                  <option value="group of friends (4–6 people)">Friend Group (4–6)</option>
+                  <option value="large group (7+ people)">Large Group (7+)</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label"><i class="fa-solid fa-sun me-1 text-accent"></i>Travel Season</label>
+                <select class="form-select" id="rec-season">
+                  <option value="summer (April–June)">Summer (Apr–Jun)</option>
+                  <option value="monsoon (July–September)">Monsoon (Jul–Sep)</option>
+                  <option value="post-monsoon / autumn (October–November)" selected>Post-Monsoon (Oct–Nov)</option>
+                  <option value="winter (December–February)">Winter (Dec–Feb)</option>
+                  <option value="spring (March)">Spring (Mar)</option>
+                </select>
+              </div>
+
+              <!-- Row 3 -->
+              <div class="col-md-6">
+                <label class="form-label"><i class="fa-solid fa-heart me-1 text-accent"></i>Interests <span class="text-muted fw-normal">(what you love most)</span></label>
+                <input type="text" class="form-control" id="rec-interests"
+                  value="culture, food, photography"
+                  placeholder="e.g., beaches, trekking, wildlife, history, food, nightlife" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label"><i class="fa-solid fa-compass me-1 text-accent"></i>Travel Style</label>
+                <select class="form-select" id="rec-style">
+                  <option value="relaxed and slow-paced">Relaxed &amp; Slow-Paced</option>
+                  <option value="balanced sightseeing" selected>Balanced Sightseeing</option>
+                  <option value="action-packed and busy">Action-Packed</option>
+                  <option value="adventure and outdoor activities">Adventure &amp; Outdoors</option>
+                  <option value="luxury and comfort">Luxury &amp; Comfort</option>
+                  <option value="deep cultural immersion">Deep Cultural Immersion</option>
+                  <option value="romantic and intimate">Romantic &amp; Intimate</option>
+                  <option value="offbeat and unexplored">Offbeat &amp; Unexplored</option>
+                </select>
+              </div>
+
+              <!-- CTA -->
+              <div class="col-12">
+                <button class="btn-generate w-100" id="recBtn" onclick="recommendDestinations()">
+                  <i class="bi bi-stars me-2"></i>Find My Perfect Destinations
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Results area — hidden until AI responds -->
+          <div id="recResults" class="d-none">
+
+            <!-- Meta bar -->
+            <div class="d-flex justify-content-between align-items-center mb-3 px-1">
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="rec-query-badge" id="recQueryBadge"></span>
+                <span class="budget-trip-meta" id="recMetaText"></span>
+              </div>
+              <button class="btn-copy" onclick="copyResult('recRawText')">
+                <i class="bi bi-clipboard me-1"></i>Copy Report
+              </button>
+            </div>
+            <div id="recRawText" class="d-none"></div>
+
+            <!-- Destination Cards — injected by JS -->
+            <div id="recDestCards" class="row g-4 mb-4"></div>
+
+            <!-- Full AI Report (collapsible) -->
+            <div class="mt-2">
+              <button class="btn-raw-toggle w-100" type="button" data-bs-toggle="collapse" data-bs-target="#recFullReport">
+                <i class="fa-solid fa-file-lines me-2"></i>View Full AI Report
+                <i class="fa-solid fa-chevron-down ms-auto"></i>
+              </button>
+              <div class="collapse mt-2" id="recFullReport">
+                <div class="result-content" id="recFullContent"></div>
+              </div>
+            </div>
+
+          </div>
+        </div><!-- end tabContentRecommend -->
+
+        <!-- ════════════════════════════════════════
+             TAB: ITINERARY PLANNER
+        ════════════════════════════════════════ -->
+        <div id="tabContentItinerary" class="tab-content">
+
+          <!-- ── Form Card ── -->
+          <div class="content-card itin-form-card mb-3">
+            <div class="card-header-custom">
+              <div class="d-flex align-items-center gap-3">
+                <div class="itin-header-icon">
+                  <i class="bi bi-map-fill"></i>
+                </div>
+                <div>
+                  <h4 class="mb-0">AI Trip Planner</h4>
+                  <p class="text-muted mb-0 mt-1">Detailed Morning · Afternoon · Evening · Night itinerary with costs, tips &amp; more</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3 p-4">
+              <div class="col-md-6">
+                <label class="form-label"><i class="fa-solid fa-location-dot me-1 text-accent"></i>Destination *</label>
+                <input type="text" class="form-control" id="itin-dest" placeholder="e.g., Goa, Rajasthan, Bali, Paris" />
+              </div>
+              <div class="col-md-3">
+                <label class="form-label"><i class="fa-regular fa-calendar me-1 text-accent"></i>Duration (days)</label>
+                <input type="number" class="form-control" id="itin-days" value="5" min="1" max="14" />
+              </div>
+              <div class="col-md-3">
+                <label class="form-label"><i class="fa-solid fa-users me-1 text-accent"></i>Travelers</label>
+                <select class="form-select" id="itin-travelers">
+                  <option value="1 solo traveler">Solo Traveler</option>
+                  <option value="2 adults (couple)" selected>Couple (2 Adults)</option>
+                  <option value="2 adults + 1–2 children">Family with Kids</option>
+                  <option value="2 adults + elderly parents">Family with Elderly</option>
+                  <option value="group of 4–6 friends">Friend Group (4–6)</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label"><i class="fa-solid fa-indian-rupee-sign me-1 text-accent"></i>Budget Level</label>
+                <select class="form-select" id="itin-budget">
+                  <option value="budget (₹1,000–2,500 per person per day)">Budget (₹1,000–2,500/day)</option>
+                  <option value="mid-range (₹2,500–7,500 per person per day)" selected>Mid-range (₹2,500–7,500/day)</option>
+                  <option value="luxury (₹7,500+ per person per day)">Luxury (₹7,500+/day)</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label"><i class="fa-solid fa-compass me-1 text-accent"></i>Travel Style</label>
+                <select class="form-select" id="itin-style">
+                  <option value="relaxed and slow-paced">Relaxed / Slow Travel</option>
+                  <option value="balanced sightseeing" selected>Balanced</option>
+                  <option value="action-packed">Action-Packed</option>
+                  <option value="adventure and outdoor">Adventure</option>
+                  <option value="deep cultural immersion">Cultural Immersion</option>
+                  <option value="romantic and intimate">Romantic</option>
+                  <option value="offbeat and unexplored">Offbeat / Unexplored</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label"><i class="fa-solid fa-heart me-1 text-accent"></i>Interests</label>
+                <input type="text" class="form-control" id="itin-interests" value="culture, food, photography" placeholder="e.g., food, beaches, trekking, history" />
+              </div>
+              <div class="col-12">
+                <button class="btn-generate w-100" id="itinBtn" onclick="generateItinerary()">
+                  <i class="bi bi-magic me-2"></i>Generate My Detailed Itinerary
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Results area (hidden until AI responds) ── -->
+          <div id="itineraryDashboard" class="d-none">
+
+            <!-- Meta bar -->
+            <div class="d-flex justify-content-between align-items-center mb-3 px-1 flex-wrap gap-2">
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="itin-dest-badge" id="itinDestBadge"></span>
+                <span class="budget-trip-meta" id="itinMetaText"></span>
+              </div>
+              <div class="d-flex gap-2">
+                <button class="btn-copy" onclick="copyResult('itinRawText')">
+                  <i class="bi bi-clipboard me-1"></i>Copy Itinerary
+                </button>
+                <button class="btn-copy" onclick="exportItinerary()">
+                  <i class="bi bi-download me-1"></i>Export
+                </button>
+              </div>
+            </div>
+            <div id="itinRawText" class="d-none"></div>
+
+            <!-- Day tabs nav -->
+            <div class="itin-day-nav mb-3" id="itinDayNav"></div>
+
+            <!-- Day cards injected here -->
+            <div id="itinDayCards"></div>
+
+            <!-- Trip Summary -->
+            <div id="itinSummary" class="itin-summary-wrapper d-none mt-4">
+              <div class="itin-summary-header">
+                <i class="fa-solid fa-chart-pie me-2"></i>Trip Summary
+              </div>
+              <div class="row g-3 mt-0" id="itinSummaryCards"></div>
+              <div class="mt-3">
+                <button class="btn-raw-toggle w-100" type="button" data-bs-toggle="collapse" data-bs-target="#itinFullReport">
+                  <i class="fa-solid fa-file-lines me-2"></i>View Full AI Itinerary Report
+                  <i class="fa-solid fa-chevron-down ms-auto"></i>
+                </button>
+                <div class="collapse mt-2" id="itinFullReport">
+                  <div class="result-content" id="itineraryContent"></div>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- end itineraryDashboard -->
+
+        </div><!-- end tabContentItinerary -->
+
+        <!-- ════════════════════════════════════════
+             TAB: BUDGET CALCULATOR
+        ════════════════════════════════════════ -->
+        <div id="tabContentBudget" class="tab-content">
+
+          <!-- ── Input Form Card ── -->
+          <div class="content-card budget-form-card mb-3">
+            <div class="card-header-custom">
+              <div class="d-flex align-items-center gap-3">
+                <div class="budget-header-icon">
+                  <i class="fa-solid fa-calculator"></i>
+                </div>
+                <div>
+                  <h4 class="mb-0">Budget Calculator</h4>
+                  <p class="text-muted mb-0 mt-1">Get a detailed cost breakdown for your trip</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3 p-4">
+              <div class="col-md-6">
+                <label class="form-label"><i class="fa-solid fa-location-dot me-1 text-accent"></i>Destination *</label>
+                <input type="text" class="form-control" id="budg-dest" placeholder="e.g., Kerala, Europe, Bali" />
+              </div>
+              <div class="col-md-3">
+                <label class="form-label"><i class="fa-regular fa-calendar me-1 text-accent"></i>Trip Duration (days)</label>
+                <input type="number" class="form-control" id="budg-days" value="5" min="1" max="30" />
+              </div>
+              <div class="col-md-3">
+                <label class="form-label"><i class="fa-solid fa-users me-1 text-accent"></i>Number of Travelers</label>
+                <input type="number" class="form-control" id="budg-travelers" value="2" min="1" max="20" />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label"><i class="fa-solid fa-hotel me-1 text-accent"></i>Accommodation Type</label>
+                <select class="form-select" id="budg-accom">
+                  <option value="budget hostel / guesthouse">Budget Hostel / Guesthouse</option>
+                  <option value="mid-range hotel (3-star)" selected>Mid-range Hotel (3-star)</option>
+                  <option value="boutique hotel / B&B">Boutique Hotel / B&B</option>
+                  <option value="luxury hotel (4-5 star)">Luxury Hotel (4-5 star)</option>
+                  <option value="Airbnb / homestay">Airbnb / Homestay</option>
+                  <option value="resort">Resort</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label"><i class="fa-solid fa-compass me-1 text-accent"></i>Travel Style</label>
+                <select class="form-select" id="budg-style">
+                  <option value="budget backpacker">Budget Backpacker</option>
+                  <option value="balanced mid-range" selected>Balanced Mid-range</option>
+                  <option value="comfortable traveler">Comfortable Traveler</option>
+                  <option value="luxury traveler">Luxury Traveler</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">
+                  <i class="fa-solid fa-wallet me-1 text-accent"></i>Total Budget (₹) <span class="text-muted fw-normal">(optional)</span>
+                </label>
+                <div class="input-group">
+                  <span class="input-group-text bg-transparent border-end-0 text-muted">₹</span>
+                  <input type="number" class="form-control border-start-0 ps-0" id="budg-total" min="0" step="500" placeholder="e.g. 50000" />
+                </div>
+                <div class="form-text text-muted" style="font-size:11px">Enter to see Remaining Budget analysis</div>
+              </div>
+              <div class="col-12">
+                <button class="btn-generate w-100" id="budgetCalcBtn" onclick="calculateBudget()">
+                  <i class="fa-solid fa-coins me-2"></i>Calculate Complete Budget
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Dashboard Result (hidden until AI responds) ── -->
+          <div id="budgetDashboard" class="d-none">
+
+            <!-- Copy raw button -->
+            <div class="d-flex justify-content-between align-items-center mb-3 px-1">
+              <div class="d-flex align-items-center gap-2">
+                <span class="budget-dest-badge" id="budgetDestBadge"></span>
+                <span class="budget-trip-meta" id="budgetTripMeta"></span>
+              </div>
+              <button class="btn-copy" onclick="copyResult('budgetRawText')">
+                <i class="bi bi-clipboard me-1"></i>Copy Report
+              </button>
+            </div>
+            <div id="budgetRawText" class="d-none"></div>
+
+            <!-- ── Category Cards ── -->
+            <div class="row g-3 mb-3" id="budgetCategoryCards">
+
+              <!-- Transport -->
+              <div class="col-md-6 animate__animated animate__fadeInUp" style="animation-delay:.05s">
+                <div class="budget-cat-card budget-transport">
+                  <div class="cat-card-header">
+                    <div class="cat-icon-wrap transport-icon"><i class="fa-solid fa-plane"></i></div>
+                    <div>
+                      <div class="cat-title">Transport</div>
+                      <div class="cat-subtitle">Flights &amp; Local Travel</div>
+                    </div>
+                    <div class="cat-pct-badge" id="pct-transport">—</div>
+                  </div>
+                  <div class="cat-tiers row g-2 mt-2">
+                    <div class="col-4"><div class="tier-box tier-budget"><div class="tier-label">Budget</div><div class="tier-val" id="tv-transport-b">—</div></div></div>
+                    <div class="col-4"><div class="tier-box tier-mid"><div class="tier-label">Mid</div><div class="tier-val" id="tv-transport-m">—</div></div></div>
+                    <div class="col-4"><div class="tier-box tier-lux"><div class="tier-label">Luxury</div><div class="tier-val" id="tv-transport-l">—</div></div></div>
+                  </div>
+                  <div class="cat-progress mt-3">
+                    <div class="progress budget-progress">
+                      <div class="progress-bar bg-transport" id="pb-transport" role="progressbar" style="width:0%"></div>
+                    </div>
+                    <small class="text-muted" id="pb-transport-lbl"></small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Accommodation -->
+              <div class="col-md-6 animate__animated animate__fadeInUp" style="animation-delay:.10s">
+                <div class="budget-cat-card budget-accomm">
+                  <div class="cat-card-header">
+                    <div class="cat-icon-wrap accomm-icon"><i class="fa-solid fa-hotel"></i></div>
+                    <div>
+                      <div class="cat-title">Accommodation</div>
+                      <div class="cat-subtitle">Hotels &amp; Stays</div>
+                    </div>
+                    <div class="cat-pct-badge" id="pct-accomm">—</div>
+                  </div>
+                  <div class="cat-tiers row g-2 mt-2">
+                    <div class="col-4"><div class="tier-box tier-budget"><div class="tier-label">Budget</div><div class="tier-val" id="tv-accomm-b">—</div></div></div>
+                    <div class="col-4"><div class="tier-box tier-mid"><div class="tier-label">Mid</div><div class="tier-val" id="tv-accomm-m">—</div></div></div>
+                    <div class="col-4"><div class="tier-box tier-lux"><div class="tier-label">Luxury</div><div class="tier-val" id="tv-accomm-l">—</div></div></div>
+                  </div>
+                  <div class="cat-progress mt-3">
+                    <div class="progress budget-progress">
+                      <div class="progress-bar bg-accomm" id="pb-accomm" role="progressbar" style="width:0%"></div>
+                    </div>
+                    <small class="text-muted" id="pb-accomm-lbl"></small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Food & Dining -->
+              <div class="col-md-6 animate__animated animate__fadeInUp" style="animation-delay:.15s">
+                <div class="budget-cat-card budget-food">
+                  <div class="cat-card-header">
+                    <div class="cat-icon-wrap food-icon"><i class="fa-solid fa-utensils"></i></div>
+                    <div>
+                      <div class="cat-title">Food &amp; Dining</div>
+                      <div class="cat-subtitle">Meals &amp; Drinks</div>
+                    </div>
+                    <div class="cat-pct-badge" id="pct-food">—</div>
+                  </div>
+                  <div class="cat-tiers row g-2 mt-2">
+                    <div class="col-4"><div class="tier-box tier-budget"><div class="tier-label">Budget</div><div class="tier-val" id="tv-food-b">—</div></div></div>
+                    <div class="col-4"><div class="tier-box tier-mid"><div class="tier-label">Mid</div><div class="tier-val" id="tv-food-m">—</div></div></div>
+                    <div class="col-4"><div class="tier-box tier-lux"><div class="tier-label">Luxury</div><div class="tier-val" id="tv-food-l">—</div></div></div>
+                  </div>
+                  <div class="cat-progress mt-3">
+                    <div class="progress budget-progress">
+                      <div class="progress-bar bg-food" id="pb-food" role="progressbar" style="width:0%"></div>
+                    </div>
+                    <small class="text-muted" id="pb-food-lbl"></small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Activities -->
+              <div class="col-md-6 animate__animated animate__fadeInUp" style="animation-delay:.20s">
+                <div class="budget-cat-card budget-activities">
+                  <div class="cat-card-header">
+                    <div class="cat-icon-wrap activities-icon"><i class="fa-solid fa-ticket"></i></div>
+                    <div>
+                      <div class="cat-title">Activities</div>
+                      <div class="cat-subtitle">Sightseeing &amp; Experiences</div>
+                    </div>
+                    <div class="cat-pct-badge" id="pct-activities">—</div>
+                  </div>
+                  <div class="cat-tiers row g-2 mt-2">
+                    <div class="col-4"><div class="tier-box tier-budget"><div class="tier-label">Budget</div><div class="tier-val" id="tv-activities-b">—</div></div></div>
+                    <div class="col-4"><div class="tier-box tier-mid"><div class="tier-label">Mid</div><div class="tier-val" id="tv-activities-m">—</div></div></div>
+                    <div class="col-4"><div class="tier-box tier-lux"><div class="tier-label">Luxury</div><div class="tier-val" id="tv-activities-l">—</div></div></div>
+                  </div>
+                  <div class="cat-progress mt-3">
+                    <div class="progress budget-progress">
+                      <div class="progress-bar bg-activities" id="pb-activities" role="progressbar" style="width:0%"></div>
+                    </div>
+                    <small class="text-muted" id="pb-activities-lbl"></small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Shopping -->
+              <div class="col-md-6 animate__animated animate__fadeInUp" style="animation-delay:.25s">
+                <div class="budget-cat-card budget-shopping">
+                  <div class="cat-card-header">
+                    <div class="cat-icon-wrap shopping-icon"><i class="fa-solid fa-bag-shopping"></i></div>
+                    <div>
+                      <div class="cat-title">Shopping</div>
+                      <div class="cat-subtitle">Souvenirs &amp; Gifts</div>
+                    </div>
+                    <div class="cat-pct-badge" id="pct-shopping">—</div>
+                  </div>
+                  <div class="cat-tiers row g-2 mt-2">
+                    <div class="col-4"><div class="tier-box tier-budget"><div class="tier-label">Budget</div><div class="tier-val" id="tv-shopping-b">—</div></div></div>
+                    <div class="col-4"><div class="tier-box tier-mid"><div class="tier-label">Mid</div><div class="tier-val" id="tv-shopping-m">—</div></div></div>
+                    <div class="col-4"><div class="tier-box tier-lux"><div class="tier-label">Luxury</div><div class="tier-val" id="tv-shopping-l">—</div></div></div>
+                  </div>
+                  <div class="cat-progress mt-3">
+                    <div class="progress budget-progress">
+                      <div class="progress-bar bg-shopping" id="pb-shopping" role="progressbar" style="width:0%"></div>
+                    </div>
+                    <small class="text-muted" id="pb-shopping-lbl"></small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Miscellaneous -->
+              <div class="col-md-6 animate__animated animate__fadeInUp" style="animation-delay:.30s">
+                <div class="budget-cat-card budget-misc">
+                  <div class="cat-card-header">
+                    <div class="cat-icon-wrap misc-icon"><i class="fa-solid fa-briefcase"></i></div>
+                    <div>
+                      <div class="cat-title">Miscellaneous</div>
+                      <div class="cat-subtitle">Tips, SIM &amp; Emergencies</div>
+                    </div>
+                    <div class="cat-pct-badge" id="pct-misc">—</div>
+                  </div>
+                  <div class="cat-tiers row g-2 mt-2">
+                    <div class="col-4"><div class="tier-box tier-budget"><div class="tier-label">Budget</div><div class="tier-val" id="tv-misc-b">—</div></div></div>
+                    <div class="col-4"><div class="tier-box tier-mid"><div class="tier-label">Mid</div><div class="tier-val" id="tv-misc-m">—</div></div></div>
+                    <div class="col-4"><div class="tier-box tier-lux"><div class="tier-label">Luxury</div><div class="tier-val" id="tv-misc-l">—</div></div></div>
+                  </div>
+                  <div class="cat-progress mt-3">
+                    <div class="progress budget-progress">
+                      <div class="progress-bar bg-misc" id="pb-misc" role="progressbar" style="width:0%"></div>
+                    </div>
+                    <small class="text-muted" id="pb-misc-lbl"></small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Emergency Fund -->
+              <div class="col-md-6 animate__animated animate__fadeInUp" style="animation-delay:.32s">
+                <div class="budget-cat-card budget-emergency">
+                  <div class="cat-card-header">
+                    <div class="cat-icon-wrap emergency-icon"><i class="fa-solid fa-kit-medical"></i></div>
+                    <div>
+                      <div class="cat-title">Emergency Fund</div>
+                      <div class="cat-subtitle">Medical &amp; Contingency (10%)</div>
+                    </div>
+                    <div class="cat-pct-badge" id="pct-emergency">—</div>
+                  </div>
+                  <div class="cat-tiers row g-2 mt-2">
+                    <div class="col-4"><div class="tier-box tier-budget"><div class="tier-label">Budget</div><div class="tier-val" id="tv-emergency-b">—</div></div></div>
+                    <div class="col-4"><div class="tier-box tier-mid"><div class="tier-label">Mid</div><div class="tier-val" id="tv-emergency-m">—</div></div></div>
+                    <div class="col-4"><div class="tier-box tier-lux"><div class="tier-label">Luxury</div><div class="tier-val" id="tv-emergency-l">—</div></div></div>
+                  </div>
+                  <div class="cat-progress mt-3">
+                    <div class="progress budget-progress">
+                      <div class="progress-bar bg-emergency" id="pb-emergency" role="progressbar" style="width:0%"></div>
+                    </div>
+                    <small class="text-muted" id="pb-emergency-lbl"></small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Taxes & Service Charges -->
+              <div class="col-md-6 animate__animated animate__fadeInUp" style="animation-delay:.37s">
+                <div class="budget-cat-card budget-taxes">
+                  <div class="cat-card-header">
+                    <div class="cat-icon-wrap taxes-icon"><i class="fa-solid fa-receipt"></i></div>
+                    <div>
+                      <div class="cat-title">Taxes &amp; Charges</div>
+                      <div class="cat-subtitle">GST, Hotel Tax &amp; Fees</div>
+                    </div>
+                    <div class="cat-pct-badge" id="pct-taxes">—</div>
+                  </div>
+                  <div class="cat-tiers row g-2 mt-2">
+                    <div class="col-4"><div class="tier-box tier-budget"><div class="tier-label">Budget</div><div class="tier-val" id="tv-taxes-b">—</div></div></div>
+                    <div class="col-4"><div class="tier-box tier-mid"><div class="tier-label">Mid</div><div class="tier-val" id="tv-taxes-m">—</div></div></div>
+                    <div class="col-4"><div class="tier-box tier-lux"><div class="tier-label">Luxury</div><div class="tier-val" id="tv-taxes-l">—</div></div></div>
+                  </div>
+                  <div class="cat-progress mt-3">
+                    <div class="progress budget-progress">
+                      <div class="progress-bar bg-taxes" id="pb-taxes" role="progressbar" style="width:0%"></div>
+                    </div>
+                    <small class="text-muted" id="pb-taxes-lbl"></small>
+                  </div>
+                </div>
+              </div>
+
+            </div><!-- end category cards -->
+
+            <!-- ── Grand Total Cards ── -->
+            <h6 class="budget-section-label mb-3"><i class="fa-solid fa-sigma me-2"></i>Total Estimated Cost</h6>
+            <div class="row g-3 mb-4" id="budgetTotalCards">
+              <div class="col-md-4 animate__animated animate__zoomIn" style="animation-delay:.42s">
+                <div class="total-tier-card total-budget-card">
+                  <div class="total-tier-icon"><i class="fa-solid fa-seedling"></i></div>
+                  <div class="total-tier-label">Budget Tier</div>
+                  <div class="total-tier-amount" id="total-budget">—</div>
+                  <div class="total-tier-sub">Smart Saver</div>
+                  <div class="total-tier-bar">
+                    <div class="progress budget-progress mt-2">
+                      <div class="progress-bar bg-success" style="width:33%"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4 animate__animated animate__zoomIn" style="animation-delay:.52s">
+                <div class="total-tier-card total-mid-card">
+                  <div class="total-tier-icon"><i class="fa-solid fa-star-half-stroke"></i></div>
+                  <div class="total-tier-label">Mid-Range Tier</div>
+                  <div class="total-tier-amount" id="total-mid">—</div>
+                  <div class="total-tier-sub">Balanced Comfort</div>
+                  <div class="total-tier-bar">
+                    <div class="progress budget-progress mt-2">
+                      <div class="progress-bar bg-primary" style="width:66%"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4 animate__animated animate__zoomIn" style="animation-delay:.62s">
+                <div class="total-tier-card total-lux-card">
+                  <div class="total-tier-icon"><i class="fa-solid fa-crown"></i></div>
+                  <div class="total-tier-label">Luxury Tier</div>
+                  <div class="total-tier-amount" id="total-lux">—</div>
+                  <div class="total-tier-sub">Premium Experience</div>
+                  <div class="total-tier-bar">
+                    <div class="progress budget-progress mt-2">
+                      <div class="progress-bar bg-purple" style="width:100%"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Remaining Budget Bar (shown only when total budget entered) ── -->
+            <div id="remainingBudgetPanel" class="d-none animate__animated animate__fadeInUp mb-4" style="animation-delay:.65s">
+              <div class="remaining-budget-card">
+                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="remaining-icon"><i class="fa-solid fa-wallet"></i></div>
+                    <div>
+                      <div class="remaining-title">Remaining Budget Analysis</div>
+                      <div class="remaining-sub">Based on your total budget vs mid-range estimate</div>
+                    </div>
+                  </div>
+                  <div class="remaining-health-badge" id="remainingHealthBadge">—</div>
+                </div>
+                <div class="row g-3 mb-3">
+                  <div class="col-4 text-center">
+                    <div class="remaining-stat-label">Total Budget</div>
+                    <div class="remaining-stat-val" id="remainingTotal">—</div>
+                  </div>
+                  <div class="col-4 text-center">
+                    <div class="remaining-stat-label">Estimated Spend</div>
+                    <div class="remaining-stat-val" id="remainingSpend">—</div>
+                  </div>
+                  <div class="col-4 text-center">
+                    <div class="remaining-stat-label">Remaining</div>
+                    <div class="remaining-stat-val remaining-val-highlight" id="remainingLeft">—</div>
+                  </div>
+                </div>
+                <div class="progress remaining-progress">
+                  <div class="progress-bar" id="remainingBar" role="progressbar" style="width:0%"></div>
+                </div>
+                <div class="d-flex justify-content-between mt-1">
+                  <small class="text-muted">₹0</small>
+                  <small class="text-muted" id="remainingMaxLabel">—</small>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Suggestions Row: Hotels + Transport ── -->
+            <div class="row g-3 mb-4" id="budgetSuggestionsRow">
+              <!-- Budget Hotels -->
+              <div class="col-md-6 animate__animated animate__fadeInUp" style="animation-delay:.68s">
+                <div class="suggest-panel">
+                  <div class="suggest-panel-head hotel-head">
+                    <div class="suggest-icon hotel-icon-wrap"><i class="fa-solid fa-hotel"></i></div>
+                    <div>
+                      <div class="suggest-title">Budget Hotels</div>
+                      <div class="suggest-sub">Recommended affordable stays</div>
+                    </div>
+                  </div>
+                  <div class="suggest-list" id="hotelSuggestList">
+                    <div class="text-muted p-3 small">Generate a budget to see hotel recommendations.</div>
+                  </div>
+                </div>
+              </div>
+              <!-- Cheapest Transport -->
+              <div class="col-md-6 animate__animated animate__fadeInUp" style="animation-delay:.73s">
+                <div class="suggest-panel">
+                  <div class="suggest-panel-head transport-head">
+                    <div class="suggest-icon transport-icon-wrap"><i class="fa-solid fa-bus"></i></div>
+                    <div>
+                      <div class="suggest-title">Cheapest Transport</div>
+                      <div class="suggest-sub">Most cost-effective travel options</div>
+                    </div>
+                  </div>
+                  <div class="suggest-list" id="transportSuggestList">
+                    <div class="text-muted p-3 small">Generate a budget to see transport options.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── Money Saving Tips Accordion ── -->
+            <div class="budget-tips-wrapper animate__animated animate__fadeInUp" style="animation-delay:.78s">
+              <h6 class="budget-section-label mb-3"><i class="fa-solid fa-lightbulb me-2"></i>Money-Saving Tips</h6>
+              <div class="accordion budget-accordion" id="tipsAccordion">
+                <!-- Tips are injected by JS -->
+              </div>
+            </div>
+
+            <!-- ── Per Person Per Day table ── -->
+            <div class="mt-3 animate__animated animate__fadeIn" style="animation-delay:.82s">
+              <button class="btn-raw-toggle w-100" type="button" data-bs-toggle="collapse" data-bs-target="#perPersonTable">
+                <i class="fa-solid fa-table me-2"></i>Per Person Per Day Breakdown
+                <i class="fa-solid fa-chevron-down ms-auto"></i>
+              </button>
+              <div class="collapse mt-2" id="perPersonTable">
+                <div class="result-content" id="perPersonContent"></div>
+              </div>
+            </div>
+
+            <!-- ── Full AI Report (collapsible) ── -->
+            <div class="mt-3 animate__animated animate__fadeIn" style="animation-delay:.88s">
+              <button class="btn-raw-toggle w-100" type="button" data-bs-toggle="collapse" data-bs-target="#fullAIReport">
+                <i class="fa-solid fa-file-lines me-2"></i>View Full AI Report
+                <i class="fa-solid fa-chevron-down ms-auto"></i>
+              </button>
+              <div class="collapse mt-2" id="fullAIReport">
+                <div class="result-content" id="budgetContent"></div>
+              </div>
+            </div>
+
+          </div><!-- end budgetDashboard -->
+
+        </div>
+
+        <!-- ════════════════════════════════════════
+             TAB: PACKING LIST
+        ════════════════════════════════════════ -->
+        <div id="tabContentPacking" class="tab-content">
+
+          <!-- ── Form Card ── -->
+          <div class="content-card pack-form-card mb-3">
+            <div class="card-header-custom">
+              <div class="d-flex align-items-center gap-3">
+                <div class="pack-header-icon">
+                  <i class="bi bi-bag-check-fill"></i>
+                </div>
+                <div>
+                  <h4 class="mb-0">AI Packing Expert</h4>
+                  <p class="text-muted mb-0 mt-1">Smart checklist with priority badges · Must-carry · Optional · Don't Pack</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3 p-4">
+              <!-- Row 1 -->
+              <div class="col-md-5">
+                <label class="form-label"><i class="fa-solid fa-location-dot me-1 text-accent"></i>Destination *</label>
+                <input type="text" class="form-control" id="pack-dest" placeholder="e.g., Spiti Valley, Goa, Bali, Europe" />
+              </div>
+              <div class="col-md-3">
+                <label class="form-label"><i class="fa-regular fa-calendar me-1 text-accent"></i>Trip Duration</label>
+                <select class="form-select" id="pack-duration">
+                  <option value="2–3 days">Weekend (2–3 days)</option>
+                  <option value="4–5 days">4–5 Days</option>
+                  <option value="1 week" selected>1 Week</option>
+                  <option value="10–14 days">10–14 Days</option>
+                  <option value="3+ weeks">3+ Weeks</option>
+                  <option value="1 month+">1 Month+</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label"><i class="fa-solid fa-sun me-1 text-accent"></i>Season</label>
+                <select class="form-select" id="pack-season">
+                  <option value="summer (hot, April–June)">Summer (Apr–Jun)</option>
+                  <option value="monsoon (rainy, July–September)">Monsoon (Jul–Sep)</option>
+                  <option value="post-monsoon / autumn (October–November)" selected>Post-Monsoon (Oct–Nov)</option>
+                  <option value="winter (cold, December–February)">Winter (Dec–Feb)</option>
+                  <option value="spring (March)">Spring (Mar)</option>
+                </select>
+              </div>
+
+              <!-- Row 2 -->
+              <div class="col-md-4">
+                <label class="form-label"><i class="fa-solid fa-cloud-sun me-1 text-accent"></i>Weather / Temperature</label>
+                <input type="text" class="form-control" id="pack-weather"
+                  placeholder="e.g., 5–15°C, humid, dry, snowfall expected" />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label"><i class="fa-solid fa-compass me-1 text-accent"></i>Travel Style</label>
+                <select class="form-select" id="pack-style">
+                  <option value="light packer (carry-on only)" selected>Light Packer (carry-on only)</option>
+                  <option value="moderate packer (check-in bag)">Moderate Packer (check-in bag)</option>
+                  <option value="heavy packer (no weight limit)">Heavy Packer (no limit)</option>
+                  <option value="minimalist backpacker">Minimalist Backpacker</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label"><i class="fa-solid fa-suitcase-rolling me-1 text-accent"></i>Trip Type</label>
+                <select class="form-select" id="pack-type">
+                  <option value="leisure sightseeing" selected>Leisure / Sightseeing</option>
+                  <option value="beach holiday">Beach Holiday</option>
+                  <option value="trekking / high-altitude adventure">Trekking / Adventure</option>
+                  <option value="business travel">Business Travel</option>
+                  <option value="family trip with children">Family with Children</option>
+                  <option value="honeymoon / romantic getaway">Honeymoon / Romantic</option>
+                  <option value="pilgrimage / religious tour">Pilgrimage / Religious</option>
+                  <option value="wildlife safari">Wildlife Safari</option>
+                  <option value="backpacking / budget travel">Backpacking</option>
+                </select>
+              </div>
+
+              <!-- Row 3 -->
+              <div class="col-12">
+                <label class="form-label"><i class="fa-solid fa-person-hiking me-1 text-accent"></i>Planned Activities <span class="text-muted fw-normal">(optional)</span></label>
+                <input type="text" class="form-control" id="pack-activities"
+                  placeholder="e.g., snorkeling, temple visits, trekking, city walks, cooking class" />
+              </div>
+
+              <!-- CTA -->
+              <div class="col-12">
+                <button class="btn-generate w-100" id="packBtn" onclick="generatePackingList()">
+                  <i class="bi bi-list-check me-2"></i>Generate My Smart Packing List
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Results Dashboard (hidden until AI responds) ── -->
+          <div id="packingDashboard" class="d-none">
+
+            <!-- Meta bar -->
+            <div class="d-flex justify-content-between align-items-center mb-3 px-1 flex-wrap gap-2">
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="pack-dest-badge" id="packDestBadge"></span>
+                <span class="budget-trip-meta" id="packMetaText"></span>
+              </div>
+              <div class="d-flex gap-2">
+                <span class="pack-progress-label" id="packProgressLabel">0 / 0 packed</span>
+                <button class="btn-copy" onclick="copyResult('packRawText')">
+                  <i class="bi bi-clipboard me-1"></i>Copy
+                </button>
+                <button class="btn-copy" onclick="exportPackingList()">
+                  <i class="bi bi-download me-1"></i>Export
+                </button>
+              </div>
+            </div>
+
+            <!-- Overall progress bar -->
+            <div class="pack-overall-progress mb-4">
+              <div class="progress pack-progress-bar-wrap">
+                <div class="progress-bar pack-progress-bar" id="packOverallBar" role="progressbar" style="width:0%"></div>
+              </div>
+            </div>
+            <div id="packRawText" class="d-none"></div>
+
+            <!-- Category tab pills -->
+            <div class="pack-cat-nav mb-3" id="packCatNav"></div>
+
+            <!-- Checklist category cards injected here -->
+            <div id="packCategoryCards" class="row g-3 mb-4"></div>
+
+            <!-- Must Carry + Optional panels -->
+            <div class="row g-3 mb-4">
+              <!-- Must Carry -->
+              <div class="col-md-6">
+                <div class="pack-priority-panel must-carry-panel">
+                  <div class="pack-priority-head">
+                    <div class="pack-priority-icon must-icon"><i class="fa-solid fa-star"></i></div>
+                    <div>
+                      <div class="pack-priority-title">Must Carry Items</div>
+                      <div class="pack-priority-sub">Never leave without these 10 essentials</div>
+                    </div>
+                  </div>
+                  <ol class="pack-priority-list" id="mustCarryList">
+                    <li class="text-muted small">Generate a packing list to see must-carry items.</li>
+                  </ol>
+                </div>
+              </div>
+              <!-- Optional -->
+              <div class="col-md-6">
+                <div class="pack-priority-panel optional-panel">
+                  <div class="pack-priority-head">
+                    <div class="pack-priority-icon optional-icon"><i class="fa-solid fa-circle-plus"></i></div>
+                    <div>
+                      <div class="pack-priority-title">Optional Items</div>
+                      <div class="pack-priority-sub">Pack only if space allows</div>
+                    </div>
+                  </div>
+                  <ol class="pack-priority-list" id="optionalList">
+                    <li class="text-muted small">Generate a packing list to see optional items.</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+
+            <!-- Don't Pack warning panel -->
+            <div id="dontPackPanel" class="pack-dont-panel mb-4 d-none">
+              <div class="pack-dont-head">
+                <i class="fa-solid fa-ban me-2"></i>Don't Pack These
+                <span class="pack-dont-sub">Common over-packing mistakes for this destination</span>
+              </div>
+              <ol class="pack-dont-list" id="dontPackList"></ol>
+            </div>
+
+            <!-- Packing Tips panel -->
+            <div id="packTipsPanel" class="budget-tips-wrapper mb-4 d-none">
+              <h6 class="budget-section-label mb-3"><i class="fa-solid fa-lightbulb me-2"></i>Smart Packing Tips</h6>
+              <div class="accordion budget-accordion" id="packTipsAccordion"></div>
+            </div>
+
+            <!-- Priority Summary + Full Report -->
+            <div class="mt-2">
+              <button class="btn-raw-toggle w-100" type="button" data-bs-toggle="collapse" data-bs-target="#packFullReport">
+                <i class="fa-solid fa-file-lines me-2"></i>View Full Packing Report
+                <i class="fa-solid fa-chevron-down ms-auto"></i>
+              </button>
+              <div class="collapse mt-2" id="packFullReport">
+                <div class="result-content" id="packingContent"></div>
+              </div>
+            </div>
+
+          </div><!-- end packingDashboard -->
+
+        </div><!-- end tabContentPacking -->
+
+        <!-- ════════════════════════════════════════
+             TAB: HOTEL ADVISOR
+        ════════════════════════════════════════ -->
+        <div id="tabContentHotel" class="tab-content">
+
+          <!-- ── Form Card ── -->
+          <div class="content-card hotel-form-card mb-3">
+            <div class="card-header-custom">
+              <div class="d-flex align-items-center gap-3">
+                <div class="hotel-header-icon">
+                  <i class="bi bi-building"></i>
+                </div>
+                <div>
+                  <h4 class="mb-0">AI Hotel Advisor</h4>
+                  <p class="text-muted mb-0 mt-1">4 curated hotels · Star ratings · Facilities · Pros &amp; Cons · Scores</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3 p-4">
+              <!-- Row 1 -->
+              <div class="col-md-5">
+                <label class="form-label"><i class="fa-solid fa-location-dot me-1 text-accent"></i>Destination *</label>
+                <input type="text" class="form-control" id="hotel-dest" placeholder="e.g., Goa, Jaipur, Bali, Paris" />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label"><i class="fa-solid fa-indian-rupee-sign me-1 text-accent"></i>Budget Per Night</label>
+                <select class="form-select" id="hotel-budget">
+                  <option value="budget (under ₹1,500/night)">Budget — Under ₹1,500/night</option>
+                  <option value="economy (₹1,500–3,000/night)">Economy — ₹1,500–3,000/night</option>
+                  <option value="mid-range (₹3,000–7,000/night)" selected>Mid-range — ₹3,000–7,000/night</option>
+                  <option value="comfort (₹7,000–15,000/night)">Comfort — ₹7,000–15,000/night</option>
+                  <option value="luxury (₹15,000–40,000/night)">Luxury — ₹15,000–40,000/night</option>
+                  <option value="ultra-luxury (₹40,000+/night)">Ultra-Luxury — ₹40,000+/night</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label"><i class="fa-solid fa-users me-1 text-accent"></i>Travelers</label>
+                <select class="form-select" id="hotel-travelers">
+                  <option value="1 solo traveler">Solo Traveler</option>
+                  <option value="2 adults (couple)" selected>Couple (2 Adults)</option>
+                  <option value="family with children (3–4 guests)">Family with Children</option>
+                  <option value="family with elderly (3–4 guests)">Family with Elderly</option>
+                  <option value="group of friends (4–6 guests)">Friend Group (4–6)</option>
+                  <option value="business traveler (1 person)">Business Traveler</option>
+                </select>
+              </div>
+
+              <!-- Row 2 -->
+              <div class="col-md-4">
+                <label class="form-label"><i class="fa-solid fa-compass me-1 text-accent"></i>Travel Style</label>
+                <select class="form-select" id="hotel-style">
+                  <option value="budget backpacker">Budget / Backpacker</option>
+                  <option value="relaxed leisure" selected>Relaxed Leisure</option>
+                  <option value="cultural explorer">Cultural Explorer</option>
+                  <option value="adventure traveler">Adventure Traveler</option>
+                  <option value="luxury and comfort">Luxury &amp; Comfort</option>
+                  <option value="romantic couple getaway">Romantic Getaway</option>
+                  <option value="business and work">Business Travel</option>
+                  <option value="family-oriented">Family-Oriented</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label"><i class="fa-solid fa-bed me-1 text-accent"></i>Room Type</label>
+                <select class="form-select" id="hotel-room">
+                  <option value="standard double room" selected>Standard Double</option>
+                  <option value="deluxe room">Deluxe Room</option>
+                  <option value="suite">Suite</option>
+                  <option value="single room">Single Room</option>
+                  <option value="family room (sleeps 4)">Family Room</option>
+                  <option value="dormitory bed">Dormitory (Hostel)</option>
+                  <option value="villa or cottage">Villa / Cottage</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label"><i class="fa-solid fa-star me-1 text-accent"></i>Preferred Star Rating</label>
+                <select class="form-select" id="hotel-stars">
+                  <option value="any star rating">Any Rating</option>
+                  <option value="2-star or guesthouse">2-Star / Guesthouse</option>
+                  <option value="3-star hotel" selected>3-Star</option>
+                  <option value="4-star hotel">4-Star</option>
+                  <option value="5-star luxury hotel">5-Star Luxury</option>
+                  <option value="boutique hotel">Boutique Hotel</option>
+                  <option value="resort">Resort</option>
+                </select>
+              </div>
+
+              <!-- Row 3 – dates (optional) -->
+              <div class="col-md-3">
+                <label class="form-label"><i class="fa-regular fa-calendar me-1 text-accent"></i>Check-in Date <span class="text-muted fw-normal">(optional)</span></label>
+                <input type="date" class="form-control" id="hotel-checkin" />
+              </div>
+              <div class="col-md-3">
+                <label class="form-label"><i class="fa-regular fa-calendar-check me-1 text-accent"></i>Check-out Date <span class="text-muted fw-normal">(optional)</span></label>
+                <input type="date" class="form-control" id="hotel-checkout" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label"><i class="fa-solid fa-heart me-1 text-accent"></i>Must-Have Amenities <span class="text-muted fw-normal">(optional)</span></label>
+                <input type="text" class="form-control" id="hotel-amenities"
+                  placeholder="e.g., swimming pool, sea view, gym, breakfast included, pet-friendly" />
+              </div>
+
+              <!-- CTA -->
+              <div class="col-12">
+                <button class="btn-generate w-100" id="hotelBtn" onclick="recommendHotels()">
+                  <i class="bi bi-building me-2"></i>Find My Perfect Hotels
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Results Dashboard (hidden until AI responds) ── -->
+          <div id="hotelDashboard" class="d-none">
+
+            <!-- Meta bar -->
+            <div class="d-flex justify-content-between align-items-center mb-3 px-1 flex-wrap gap-2">
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="hotel-dest-badge" id="hotelDestBadge"></span>
+                <span class="budget-trip-meta" id="hotelMetaText"></span>
+              </div>
+              <div class="d-flex gap-2">
+                <button class="btn-copy" onclick="copyResult('hotelRawText')">
+                  <i class="bi bi-clipboard me-1"></i>Copy Report
+                </button>
+                <button class="btn-copy" onclick="exportHotelReport()">
+                  <i class="bi bi-download me-1"></i>Export
+                </button>
+              </div>
+            </div>
+            <div id="hotelRawText" class="d-none"></div>
+
+            <!-- Hotel cards injected by JS -->
+            <div id="hotelCards" class="row g-4 mb-4"></div>
+
+            <!-- Top Picks summary panel -->
+            <div id="hotelTopPicks" class="hotel-top-picks-panel d-none mb-4">
+              <div class="hotel-top-picks-head">
+                <i class="fa-solid fa-trophy me-2"></i>Our Top Picks
+              </div>
+              <div class="row g-3 p-3" id="hotelTopPicksContent"></div>
+            </div>
+
+            <!-- Booking Tips accordion -->
+            <div id="hotelBookingTips" class="budget-tips-wrapper d-none mb-4">
+              <h6 class="budget-section-label mb-3"><i class="fa-solid fa-bookmark me-2"></i>Booking Tips</h6>
+              <div class="accordion budget-accordion" id="hotelTipsAccordion"></div>
+            </div>
+
+            <!-- Full AI Report -->
+            <div class="mt-2">
+              <button class="btn-raw-toggle w-100" type="button" data-bs-toggle="collapse" data-bs-target="#hotelFullReport">
+                <i class="fa-solid fa-file-lines me-2"></i>View Full AI Hotel Report
+                <i class="fa-solid fa-chevron-down ms-auto"></i>
+              </button>
+              <div class="collapse mt-2" id="hotelFullReport">
+                <div class="result-content" id="hotelFullContent"></div>
+              </div>
+            </div>
+
+          </div><!-- end hotelDashboard -->
+
+        </div><!-- end tabContentHotel -->
+
+        <!-- ════════════════════════════════════════
+             TAB: AI TRAVEL CONSULTANT
+        ════════════════════════════════════════ -->
+        <div id="tabContentConsultant" class="tab-content">
+
+          <!-- ── Form Card ── -->
+          <div class="content-card consultant-form-card mb-3">
+            <div class="card-header-custom">
+              <div class="d-flex align-items-center gap-3">
+                <div class="consultant-header-icon">
+                  <i class="bi bi-person-badge-fill"></i>
+                </div>
+                <div>
+                  <h4 class="mb-0">AI Travel Consultant</h4>
+                  <p class="text-muted mb-0 mt-1">Expert destination recommendations · 10-point scoring · Comparison table · Top picks</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3 p-4">
+              <!-- Row 1 -->
+              <div class="col-md-6">
+                <label class="form-label"><i class="fa-solid fa-globe me-1 text-accent"></i>Destination Preference</label>
+                <select class="form-select" id="con-type">
+                  <option value="any destination (India or International)">Any — Surprise Me!</option>
+                  <optgroup label="🇮🇳 India">
+                    <option value="Indian beach destination">Indian Beaches</option>
+                    <option value="Indian hill station or mountain destination">Indian Hill Stations / Mountains</option>
+                    <option value="Indian heritage or cultural destination">Indian Heritage &amp; Culture</option>
+                    <option value="Indian wildlife or national park">Indian Wildlife / Nature</option>
+                    <option value="Indian city break">Indian City Break</option>
+                    <option value="Indian spiritual or pilgrimage destination">Indian Pilgrimage / Spiritual</option>
+                  </optgroup>
+                  <optgroup label="🌍 International">
+                    <option value="international beach destination">International Beach</option>
+                    <option value="international cultural or heritage destination">International Culture</option>
+                    <option value="international adventure destination">International Adventure</option>
+                    <option value="Southeast Asia destination">Southeast Asia</option>
+                    <option value="European destination">Europe</option>
+                    <option value="Middle East destination">Middle East</option>
+                  </optgroup>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label"><i class="fa-solid fa-indian-rupee-sign me-1 text-accent"></i>Total Budget</label>
+                <select class="form-select" id="con-budget">
+                  <option value="budget (under ₹10,000 total)">Budget — Under ₹10,000</option>
+                  <option value="budget (₹10,000–₹25,000 total)">Budget — ₹10,000–₹25,000</option>
+                  <option value="mid-range (₹25,000–₹60,000 total)" selected>Mid-range — ₹25,000–₹60,000</option>
+                  <option value="comfortable (₹60,000–₹1,50,000 total)">Comfortable — ₹60,000–₹1,50,000</option>
+                  <option value="luxury (₹1,50,000+ total)">Luxury — ₹1,50,000+</option>
+                </select>
+              </div>
+
+              <!-- Row 2 -->
+              <div class="col-md-4">
+                <label class="form-label"><i class="fa-regular fa-calendar me-1 text-accent"></i>Travel Duration</label>
+                <select class="form-select" id="con-days">
+                  <option value="2–3 days (weekend trip)">Weekend (2–3 days)</option>
+                  <option value="4–5 days">4–5 Days</option>
+                  <option value="6–7 days" selected>6–7 Days</option>
+                  <option value="8–10 days">8–10 Days</option>
+                  <option value="12–14 days">12–14 Days</option>
+                  <option value="3 weeks or more">3 Weeks+</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label"><i class="fa-solid fa-users me-1 text-accent"></i>Travelers</label>
+                <select class="form-select" id="con-travelers">
+                  <option value="1 solo traveler">Solo Traveler</option>
+                  <option value="2 adults (couple)" selected>Couple (2 Adults)</option>
+                  <option value="2 adults + 1–2 children">Family with Kids</option>
+                  <option value="2 adults + elderly parents">Family with Elderly</option>
+                  <option value="group of friends (4–6 people)">Friend Group (4–6)</option>
+                  <option value="large group (7+ people)">Large Group (7+)</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label"><i class="fa-solid fa-sun me-1 text-accent"></i>Travel Season</label>
+                <select class="form-select" id="con-season">
+                  <option value="summer (April–June)">Summer (Apr–Jun)</option>
+                  <option value="monsoon (July–September)">Monsoon (Jul–Sep)</option>
+                  <option value="post-monsoon / autumn (October–November)" selected>Post-Monsoon (Oct–Nov)</option>
+                  <option value="winter (December–February)">Winter (Dec–Feb)</option>
+                  <option value="spring (March)">Spring (Mar)</option>
+                </select>
+              </div>
+
+              <!-- Row 3 -->
+              <div class="col-md-6">
+                <label class="form-label"><i class="fa-solid fa-heart me-1 text-accent"></i>Interests</label>
+                <input type="text" class="form-control" id="con-interests"
+                  value="culture, food, photography"
+                  placeholder="e.g., beaches, trekking, wildlife, history, food, nightlife" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label"><i class="fa-solid fa-compass me-1 text-accent"></i>Travel Style</label>
+                <select class="form-select" id="con-style">
+                  <option value="relaxed and slow-paced">Relaxed &amp; Slow-Paced</option>
+                  <option value="balanced sightseeing" selected>Balanced Sightseeing</option>
+                  <option value="action-packed and busy">Action-Packed</option>
+                  <option value="adventure and outdoor activities">Adventure &amp; Outdoors</option>
+                  <option value="luxury and comfort">Luxury &amp; Comfort</option>
+                  <option value="deep cultural immersion">Deep Cultural Immersion</option>
+                  <option value="romantic and intimate">Romantic &amp; Intimate</option>
+                  <option value="offbeat and unexplored">Offbeat &amp; Unexplored</option>
+                </select>
+              </div>
+
+              <!-- CTA -->
+              <div class="col-12">
+                <button class="btn-generate consultant-btn w-100" id="conBtn" onclick="runTravelConsultant()">
+                  <i class="bi bi-person-badge-fill me-2"></i>Get Expert Destination Advice
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Results area — hidden until AI responds -->
+          <div id="conDashboard" class="d-none">
+
+            <!-- Meta bar -->
+            <div class="d-flex justify-content-between align-items-center mb-3 px-1 flex-wrap gap-2">
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="con-query-badge" id="conQueryBadge"></span>
+                <span class="budget-trip-meta" id="conMetaText"></span>
+              </div>
+              <div class="d-flex gap-2">
+                <button class="btn-copy" onclick="copyResult('conRawText')">
+                  <i class="bi bi-clipboard me-1"></i>Copy
+                </button>
+                <button class="btn-copy" onclick="exportConsultantReport()">
+                  <i class="bi bi-download me-1"></i>Export
+                </button>
+              </div>
+            </div>
+            <div id="conRawText" class="d-none"></div>
+
+            <!-- Score summary bar -->
+            <div id="conScoreSummary" class="con-score-summary mb-4 d-none">
+              <div class="con-score-summary-head">
+                <i class="fa-solid fa-chart-bar me-2"></i>Score Comparison at a Glance
+              </div>
+              <div id="conScoreBars" class="con-score-bars"></div>
+            </div>
+
+            <!-- Destination cards — injected by JS -->
+            <div id="conDestCards" class="row g-4 mb-4"></div>
+
+            <!-- Top pick banner -->
+            <div id="conTopPickBanner" class="con-top-pick-banner d-none mb-4">
+              <div class="con-top-pick-icon"><i class="fa-solid fa-trophy"></i></div>
+              <div class="con-top-pick-content">
+                <div class="con-top-pick-label">🏆 Expert's Top Pick</div>
+                <div class="con-top-pick-name" id="conTopPickName"></div>
+                <div class="con-top-pick-reason" id="conTopPickReason"></div>
+              </div>
+            </div>
+
+            <!-- Full AI report (collapsible) -->
+            <div class="mt-2">
+              <button class="btn-raw-toggle w-100" type="button" data-bs-toggle="collapse" data-bs-target="#conFullReport">
+                <i class="fa-solid fa-file-lines me-2"></i>View Full AI Consultant Report
+                <i class="fa-solid fa-chevron-down ms-auto"></i>
+              </button>
+              <div class="collapse mt-2" id="conFullReport">
+                <div class="result-content" id="conFullContent"></div>
+              </div>
+            </div>
+
+          </div><!-- end conDashboard -->
+
+        </div><!-- end tabContentConsultant -->
+
+        <!-- ════════════════════════════════════════
+             TAB: TRAVEL PROFILE
+        ════════════════════════════════════════ -->
+        <div id="tabContentProfile" class="tab-content">
+          <div class="content-card">
+            <div class="card-header-custom">
+              <h4><i class="bi bi-people-fill me-2"></i>Travel Profile</h4>
+              <p class="text-muted mb-0">Save your preferences for personalized AI responses</p>
+            </div>
+
+            <div class="row g-3 p-4">
+              <div class="col-md-6">
+                <label class="form-label">Who's Traveling?</label>
+                <input type="text" class="form-control" id="prof-travelers"
+                  placeholder="e.g., 2 adults + 1 child (age 7)" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Home City</label>
+                <input type="text" class="form-control" id="prof-city"
+                  placeholder="e.g., Bangalore, Mumbai, Delhi" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Typical Budget Range</label>
+                <select class="form-select" id="prof-budget">
+                  <option value="budget (under ₹2000/day)">Budget (under ₹2,000/day)</option>
+                  <option value="mid-range (₹2000-7000/day)" selected>Mid-range (₹2,000–7,000/day)</option>
+                  <option value="comfortable (₹7000-15000/day)">Comfortable (₹7,000–15,000/day)</option>
+                  <option value="luxury (₹15000+/day)">Luxury (₹15,000+/day)</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Travel Style</label>
+                <select class="form-select" id="prof-style">
+                  <option value="backpacker / budget">Backpacker / Budget</option>
+                  <option value="relaxed sightseeing" selected>Relaxed Sightseeing</option>
+                  <option value="adventure seeker">Adventure Seeker</option>
+                  <option value="cultural explorer">Cultural Explorer</option>
+                  <option value="luxury traveler">Luxury Traveler</option>
+                  <option value="family-oriented">Family-Oriented</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Interests</label>
+                <input type="text" class="form-control" id="prof-interests"
+                  placeholder="e.g., beaches, history, trekking, food, wildlife" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Special Needs / Dietary / Medical</label>
+                <input type="text" class="form-control" id="prof-needs"
+                  placeholder="e.g., vegetarian, wheelchair access, no spicy food" />
+              </div>
+              <div class="col-12">
+                <button class="btn-generate w-100" onclick="saveProfile()">
+                  <i class="bi bi-floppy2-fill me-2"></i>Save My Profile
+                </button>
+              </div>
+            </div>
+
+            <!-- Profile saved confirmation -->
+            <div id="profileSaved" class="d-none p-4 pt-0">
+              <div class="success-banner">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                Profile saved! All AI responses will now be personalized to your preferences.
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Quick Suggest Section -->
+          <div class="content-card mt-3">
+            <div class="card-header-custom">
+              <h5><i class="bi bi-lightbulb-fill me-2"></i>Get Personalized Suggestions</h5>
+              <p class="text-muted mb-0">Tell us what you're looking for</p>
+            </div>
+            <div class="row g-3 p-4">
+              <div class="col-md-6">
+                <label class="form-label">What are you looking for?</label>
+                <input type="text" class="form-control" id="suggest-pref"
+                  placeholder="e.g., relaxing beaches, adventure, cultural, wildlife" />
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Budget</label>
+                <select class="form-select" id="suggest-budget">
+                  <option>Budget (₹5K-15K total)</option>
+                  <option selected>Mid-range (₹15K-50K total)</option>
+                  <option>Comfortable (₹50K-1L total)</option>
+                  <option>Luxury (₹1L+ total)</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Available Time</label>
+                <select class="form-select" id="suggest-duration">
+                  <option>Weekend (2-3 days)</option>
+                  <option selected>5-7 days</option>
+                  <option>10-14 days</option>
+                  <option>2-3 weeks</option>
+                  <option>1 month+</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <button class="btn-generate w-100" onclick="quickSuggest()">
+                  <i class="bi bi-stars me-2"></i>Suggest Destinations For Me
+                </button>
+              </div>
+            </div>
+            <div id="suggestResult" class="result-area d-none p-4 pt-0">
+              <div class="result-header">
+                <h5><i class="bi bi-geo-alt-fill me-2"></i>Recommended Destinations</h5>
+                <button class="btn-copy" onclick="copyResult('suggestResult')">
+                  <i class="bi bi-clipboard me-1"></i>Copy
+                </button>
+              </div>
+              <div class="result-content" id="suggestContent"></div>
+            </div>
+          </div>
+
+        </div>
+        <!-- end tabContentProfile -->
+
+      </div><!-- end main content col -->
+    </div><!-- end row -->
+  </div><!-- end container -->
+</main>
+
+<!-- ═══════════════════════════════════════════════════════════
+     TOAST NOTIFICATIONS
+═══════════════════════════════════════════════════════════ -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:9999">
+  <div id="toastMsg" class="toast align-items-center border-0" role="alert">
+    <div class="d-flex">
+      <div class="toast-body" id="toastBody">Message here</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     LOADING OVERLAY
+═══════════════════════════════════════════════════════════ -->
+<div id="loadingOverlay" class="loading-overlay d-none">
+  <div class="loading-box">
+    <div class="spinner-border text-primary mb-3" role="status"></div>
+    <p class="mb-1 fw-semibold" id="loadingText">Generating your plan...</p>
+    <small class="text-muted">Powered by IBM Granite</small>
+  </div>
+</div>
+
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Custom JS -->
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
